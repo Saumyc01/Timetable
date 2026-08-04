@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Common Foundation Timetable 2026-27 - Interactive Management</title>
+  <style>
+    :root {
+      --excel-green: #107c41;
+      --excel-green-dark: #0b582e;
+      --excel-light-bg: #f3f3f3;
+      --excel-border: #d4d4d4;
+      --excel-header-bg: #e6e6e6;
+      --danger-red: #d93025;
+      --danger-bg: #fce8e6;
+      --warning-amber: #f2994a;
+      --success-green: #27ae60;
+      --text-dark: #202124;
+      --sidebar-width: 320px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background-color: #f8f9fa;
+      color: var(--text-dark);
+      overflow: hidden;
+    }
+
+    /* Top Navigation Header */
+    header {
+      background-color: var(--excel-green);
+      color: white;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+      z-index: 100;
+    }
+
+    header h1 { font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    
+    .top-controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .dept-filter-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    .dept-filter-container label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--excel-green-dark);
+    }
+
+    select.dept-select {
+      border: 1px solid var(--excel-border);
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .btn-action {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: white;
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-action:hover { background: rgba(255, 255, 255, 0.35); }
+
+    /* Alert Banner on Top of Table */
+    .alert-banner {
+      background-color: var(--danger-bg);
+      border-bottom: 2px solid var(--danger-red);
+      color: var(--danger-red);
+      padding: 8px 20px;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.3s;
+    }
+
+    .alert-banner.clean {
+      background-color: #e6f4ea;
+      border-bottom: 2px solid var(--success-green);
+      color: var(--success-green);
+    }
+
+    .alert-details {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .error-badge {
+      background: var(--danger-red);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    /* Main Container Layout */
+    .main-wrapper {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Timetable Grid Container */
+    .grid-container {
+      flex: 1;
+      overflow: auto;
+      background: white;
+      position: relative;
+    }
+
+    table.excel-table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 0.8rem;
+      table-layout: fixed;
+    }
+
+    table.excel-table th, table.excel-table td {
+      border: 1px solid var(--excel-border);
+      padding: 6px 8px;
+      text-align: center;
+      min-width: 110px;
+      max-width: 140px;
+      height: 28px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      position: relative;
+    }
+
+    /* Column Frozen Header */
+    table.excel-table th.col-sticky-1, table.excel-table td.col-sticky-1 {
+      position: sticky;
+      left: 0;
+      z-index: 20;
+      background-color: var(--excel-header-bg);
+      min-width: 120px;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    table.excel-table th.col-sticky-2, table.excel-table td.col-sticky-2 {
+      position: sticky;
+      left: 120px;
+      z-index: 20;
+      background-color: var(--excel-header-bg);
+      min-width: 110px;
+      font-size: 0.75rem;
+    }
+
+    /* Header Styling */
+    tr.header-week th { background-color: #217346; color: white; font-size: 0.85rem; font-weight: bold; }
+    tr.header-date th { background-color: #e1dfdd; color: #323130; font-size: 0.75rem; }
+    tr.header-day th { background-color: #f3f2f1; color: #323130; font-weight: 600; }
+    tr.header-dayno th { background-color: #edebe9; color: #605e5c; font-size: 0.7rem; }
+
+    /* Department Section Divider */
+    tr.dept-header-row td {
+      background-color: #107c41;
+      color: white;
+      font-weight: bold;
+      text-align: left;
+      font-size: 0.9rem;
+      padding: 6px 12px;
+      position: sticky;
+      left: 0;
+      z-index: 15;
+    }
+
+    /* Editable Cells */
+    td.editable {
+      cursor: pointer;
+      background-color: white;
+      transition: background-color 0.15s;
+    }
+
+    td.editable:hover { background-color: #e8f5e9; }
+
+    td.editable:focus {
+      outline: 2px solid var(--excel-green);
+      outline-offset: -2px;
+      background-color: #fff !important;
+      z-index: 10;
+    }
+
+    td.overmapped-cell {
+      background-color: var(--danger-bg) !important;
+      color: var(--danger-red) !important;
+      font-weight: bold;
+      border: 1px solid var(--danger-red) !important;
+    }
+
+    /* Side Panel */
+    .side-panel {
+      width: var(--sidebar-width);
+      background-color: #ffffff;
+      border-left: 1px solid var(--excel-border);
+      display: flex;
+      flex-direction: column;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+      z-index: 30;
+    }
+
+    .panel-header {
+      padding: 12px 16px;
+      background-color: var(--excel-header-bg);
+      border-bottom: 1px solid var(--excel-border);
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-controls {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--excel-border);
+      background-color: #fcfcfc;
+    }
+
+    .panel-controls label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #605e5c;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .panel-controls select, .panel-controls input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--excel-border);
+      border-radius: 4px;
+      font-size: 0.8rem;
+      outline: none;
+      margin-bottom: 8px;
+    }
+
+    .faculty-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 16px;
+    }
+
+    .faculty-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      border-radius: 4px;
+      border: 1px solid #e0e0e0;
+      background-color: #fafafa;
+      font-size: 0.82rem;
+    }
+
+    .faculty-card.free {
+      border-left: 4px solid var(--success-green);
+      background-color: #f4fbf7;
+    }
+
+    .faculty-card.busy {
+      border-left: 4px solid var(--warning-amber);
+      background-color: #fff9f3;
+      opacity: 0.75;
+    }
+
+    .status-pill {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    .status-pill.free { background-color: #d4edda; color: #155724; }
+    .status-pill.busy { background-color: #fff3cd; color: #856404; }
+
+    /* Helper styles */
+    .row-type-label { font-size: 0.75rem; color: #555; font-style: italic; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <h1>📊 Timetable Management Console (Common Foundation 2026-27)</h1>
+    <div class="top-controls">
+      <div class="dept-filter-container">
+        <label for="deptSelect">Filter Department:</label>
+        <select id="deptSelect" class="dept-select" onchange="filterDepartment()">
+          <option value="ALL">All Departments (Editable)</option>
+          <option value="Interior 1">Interior 1</option>
+          <option value="Interior 2">Interior 2</option>
+          <option value="PSD 1">PSD 1</option>
+          <option value="PSD 2">PSD 2</option>
+          <option value="PSD 3">PSD 3</option>
+          <option value="IXD">IXD</option>
+          <option value="AMD 1">AMD 1</option>
+          <option value="AMD 2">AMD 2</option>
+          <option value="FDT Sec A">Fashion Design (FDT Sec A)</option>
+          <option value="FCS Sec B">Fashion Comm (FCS Sec B)</option>
+        </select>
+      </div>
+      <button class="btn-action" onclick="resetTimetable()">Reset</button>
+      <button class="btn-action" onclick="exportData()">Export Data</button>
+    </div>
+  </header>
+
+  <!-- Real-time Over-mapping Error Banner -->
+  <div id="alertBanner" class="alert-banner clean">
+    <div class="alert-details">
+      <span class="error-badge" id="errorCountBadge">0 Errors</span>
+      <span id="alertMessage">✅ All faculties are mapped within valid schedules. No conflicts detected.</span>
+    </div>
+  </div>
+
+  <!-- Main Grid & Panel Workspace -->
+  <div class="main-wrapper">
+    
+    <!-- Excel-like Timetable Grid -->
+    <div class="grid-container">
+      <table class="excel-table" id="timetableGrid">
+        <thead>
+          <tr class="header-week" id="weekRow">
+            <th class="col-sticky-1">Department</th>
+            <th class="col-sticky-2">Slot / Type</th>
+          </tr>
+          <tr class="header-date" id="dateRow">
+            <th class="col-sticky-1"></th>
+            <th class="col-sticky-2">Date</th>
+          </tr>
+          <tr class="header-day" id="dayRow">
+            <th class="col-sticky-1"></th>
+            <th class="col-sticky-2">Day</th>
+          </tr>
+          <tr class="header-dayno" id="dayNoRow">
+            <th class="col-sticky-1"></th>
+            <th class="col-sticky-2">Day No.</th>
+          </tr>
+        </thead>
+        <tbody id="timetableBody">
+          <!-- Timetable rows injected dynamically via JavaScript -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Right Side Panel: Available Faculties -->
+    <div class="side-panel">
+      <div class="panel-header">
+        <span>👨‍🏫 Faculty Availability</span>
+      </div>
+      <div class="panel-controls">
+        <label for="weekFilter">Select Week:</label>
+        <select id="weekFilter" onchange="updateFacultyAvailability()">
+          <!-- Weeks populated dynamically -->
+        </select>
+
+        <label for="dayFilter">Filter by Day:</label>
+        <select id="dayFilter" onchange="updateFacultyAvailability()">
+          <option value="ALL">Entire Week</option>
+          <option value="Tuesday">Tuesday</option>
+          <option value="Wednesday">Wednesday</option>
+          <option value="Thursday">Thursday</option>
+          <option value="Friday">Friday</option>
+          <option value="Saturday">Saturday</option>
+          <option value="Monday">Monday</option>
+        </select>
+
+        <label for="facultySearch">Search Faculty:</label>
+        <input type="text" id="facultySearch" placeholder="Type faculty name..." oninput="updateFacultyAvailability()">
+      </div>
+
+      <div class="faculty-list" id="facultyList">
+        <!-- Faculty availability cards rendered here -->
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Master Faculty List
+    const FACULTY_MASTER = [
+      "SAUMYA B", "MANISH", "NAINA C", "VIRAJ", "KOMAL", "PRIYA", "PRIYA DEEP",
+      "VIJAY", "JAGAN", "RUCHIN", "DEEPAK", "HEENA", "SHATA", "NEER", "PRATIBHA",
+      "SARVESH", "LAVANYA V", "SHREYA SEN", "SADAB", "SAUMYA C", "KAVITA", "PREM",
+      "PALASH", "SUDIP", "KEERTHANA", "RAVI", "KIRAN", "ADITYA C", "VIVEK", "RAKESH"
+    ];
+
+    // Dates and Weeks Data Columns
+    const TIMETABLE_DAYS = [
+      { id: "col_1", week: "WEEK 3", date: "2026-07-14", day: "Tuesday", dayNo: "DAY 1" },
+      { id: "col_2", week: "WEEK 3", date: "2026-07-15", day: "Wednesday", dayNo: "DAY 2" },
+      { id: "col_3", week: "WEEK 3", date: "2026-07-16", day: "Thursday", dayNo: "DAY 3" },
+      { id: "col_4", week: "WEEK 3", date: "2026-07-17", day: "Friday", dayNo: "DAY 4" },
+      { id: "col_5", week: "WEEK 4", date: "2026-07-20", day: "Monday", dayNo: "DAY 5" },
+      { id: "col_6", week: "WEEK 4", date: "2026-07-21", day: "Tuesday", dayNo: "DAY 6" },
+      { id: "col_7", week: "WEEK 4", date: "2026-07-22", day: "Wednesday", dayNo: "DAY 7" },
+      { id: "col_8", week: "WEEK 4", date: "2026-07-23", day: "Thursday", dayNo: "DAY 8" },
+      { id: "col_9", week: "WEEK 4", date: "2026-07-24", day: "Friday", dayNo: "DAY 9" },
+      { id: "col_10", week: "WEEK 5", date: "2026-07-27", day: "Monday", dayNo: "DAY 10" },
+      { id: "col_11", week: "WEEK 5", date: "2026-07-28", day: "Tuesday", dayNo: "DAY 11" },
+      { id: "col_12", week: "WEEK 5", date: "2026-07-29", day: "Wednesday", dayNo: "DAY 12" },
+      { id: "col_13", week: "WEEK 5", date: "2026-07-30", day: "Thursday", dayNo: "DAY 13" },
+      { id: "col_14", week: "WEEK 5", date: "2026-07-31", day: "Friday", dayNo: "DAY 14" }
+    ];
+
+    // Department Structure Definition
+    const DEPARTMENTS = [
+      { name: "Interior 1", rows: ["MODULE", "Faculty 1 (9.30 - 12.05)", "Faculty 2 (1.00 - 5.30)"] },
+      { name: "Interior 2", rows: ["MODULE", "Faculty 1 (9.30 - 12.05)", "Faculty 2 (1.00 - 5.30)"] },
+      { name: "PSD 1", rows: ["MODULE", "Faculty 1", "Faculty 2"] },
+      { name: "PSD 2", rows: ["MODULE", "Faculty 1", "Faculty 2"] },
+      { name: "PSD 3", rows: ["MODULE", "Faculty 1", "Faculty 2"] },
+      { name: "IXD", rows: ["MODULE", "Faculty Assigned"] },
+      { name: "AMD 1", rows: ["MODULE", "Faculty 1", "Faculty 2"] },
+      { name: "AMD 2", rows: ["MODULE", "Faculty 1", "Faculty 2"] },
+      { name: "FDT Sec A", rows: ["MODULE", "Faculty 1", "Faculty 2"] },
+      { name: "FCS Sec B", rows: ["MODULE", "Faculty 1", "Faculty 2"] }
+    ];
+
+    // Initial State Store
+    let timetableData = {};
+
+    // Initialize Default Data
+    function initData() {
+      DEPARTMENTS.forEach(dept => {
+        timetableData[dept.name] = {};
+        dept.rows.forEach(rowType => {
+          timetableData[dept.name][rowType] = {};
+          TIMETABLE_DAYS.forEach(d => {
+            // Seed sample data based on original excel sheet structure
+            if (rowType === "MODULE") {
+              timetableData[dept.name][rowType][d.id] = (dept.name.startsWith("Interior") || dept.name.startsWith("PSD")) ? "VRS 1" : "DE 1";
+            } else if (rowType.includes("Faculty 1") || rowType === "Faculty Assigned") {
+              if (dept.name === "Interior 1") timetableData[dept.name][rowType][d.id] = "SAUMYA B";
+              else if (dept.name === "Interior 2") timetableData[dept.name][rowType][d.id] = "VIRAJ";
+              else if (dept.name === "PSD 1") timetableData[dept.name][rowType][d.id] = "VIJAY";
+              else if (dept.name === "PSD 2") timetableData[dept.name][rowType][d.id] = "RUCHIN";
+              else if (dept.name === "PSD 3") timetableData[dept.name][rowType][d.id] = "NEER";
+              else if (dept.name === "IXD") timetableData[dept.name][rowType][d.id] = "PRATIBHA";
+              else if (dept.name === "AMD 1") timetableData[dept.name][rowType][d.id] = "KAVITA";
+              else timetableData[dept.name][rowType][d.id] = "PREM";
+            } else if (rowType.includes("Faculty 2")) {
+              if (dept.name === "Interior 1") timetableData[dept.name][rowType][d.id] = "MANISH";
+              else if (dept.name === "PSD 1") timetableData[dept.name][rowType][d.id] = "DEEPAK";
+              else if (dept.name === "PSD 2") timetableData[dept.name][rowType][d.id] = "JAGAN";
+              else if (dept.name === "PSD 3") timetableData[dept.name][rowType][d.id] = "SARVESH";
+              else if (dept.name === "AMD 1") timetableData[dept.name][rowType][d.id] = "VIRAJ";
+              else timetableData[dept.name][rowType][d.id] = "PALASH";
+            }
+          });
+        });
+      });
+    }
+
+    // Build Table Header & Body
+    function renderGrid() {
+      const weekRow = document.getElementById("weekRow");
+      const dateRow = document.getElementById("dateRow");
+      const dayRow = document.getElementById("dayRow");
+      const dayNoRow = document.getElementById("dayNoRow");
+
+      // Reset dynamic columns
+      weekRow.querySelectorAll('th:nth-child(n+3)').forEach(e => e.remove());
+      dateRow.querySelectorAll('th:nth-child(n+3)').forEach(e => e.remove());
+      dayRow.querySelectorAll('th:nth-child(n+3)').forEach(e => e.remove());
+      dayNoRow.querySelectorAll('th:nth-child(n+3)').forEach(e => e.remove());
+
+      TIMETABLE_DAYS.forEach(d => {
+        weekRow.innerHTML += `<th>${d.week}</th>`;
+        dateRow.innerHTML += `<th>${d.date}</th>`;
+        dayRow.innerHTML += `<th>${d.day}</th>`;
+        dayNoRow.innerHTML += `<th>${d.dayNo}</th>`;
+      });
+
+      renderBody();
+      populateWeekFilter();
+    }
+
+    // Render Department Rows
+    function renderBody() {
+      const tbody = document.getElementById("timetableBody");
+      const selectedDept = document.getElementById("deptSelect").value;
+      tbody.innerHTML = "";
+
+      DEPARTMENTS.forEach(dept => {
+        if (selectedDept !== "ALL" && dept.name !== selectedDept) return;
+
+        // Header Row for Department
+        tbody.innerHTML += `
+          <tr class="dept-header-row">
+            <td colspan="${TIMETABLE_DAYS.length + 2}">📌 ${dept.name}</td>
+          </tr>
+        `;
+
+        dept.rows.forEach(rowType => {
+          let tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="col-sticky-1">${dept.name}</td>
+            <td class="col-sticky-2 row-type-label">${rowType}</td>
+          `;
+
+          TIMETABLE_DAYS.forEach(d => {
+            const val = timetableData[dept.name][rowType][d.id] || "";
+            let td = document.createElement("td");
+            td.className = "editable";
+            td.contentEditable = "true";
+            td.dataset.dept = dept.name;
+            td.dataset.rowType = rowType;
+            td.dataset.dayId = d.id;
+            td.innerText = val;
+
+            td.addEventListener("blur", handleCellEdit);
+            tr.appendChild(td);
+          });
+
+          tbody.appendChild(tr);
+        });
+      });
+
+      validateOverMapping();
+      updateFacultyAvailability();
+    }
+
+    // Handle Editing Cells
+    function handleCellEdit(e) {
+      const cell = e.target;
+      const dept = cell.dataset.dept;
+      const rowType = cell.dataset.rowType;
+      const dayId = cell.dataset.dayId;
+      const newValue = cell.innerText.trim().toUpperCase();
+
+      timetableData[dept][rowType][dayId] = newValue;
+      cell.innerText = newValue;
+
+      validateOverMapping();
+      updateFacultyAvailability();
+    }
+
+    // Filter Department View
+    function filterDepartment() {
+      renderBody();
+    }
+
+    // Real-Time Over-Mapping Validation Engine
+    function validateOverMapping() {
+      let conflicts = [];
+      document.querySelectorAll(".editable").forEach(c => c.classList.remove("overmapped-cell"));
+
+      TIMETABLE_DAYS.forEach(d => {
+        // Track faculty assignments for specific day & time slots
+        let slotAssignments = {};
+
+        DEPARTMENTS.forEach(dept => {
+          dept.rows.forEach(rowType => {
+            if (rowType === "MODULE") return; // skip module titles
+
+            const facultyName = timetableData[dept.name][rowType][d.id];
+            if (facultyName && FACULTY_MASTER.includes(facultyName)) {
+              let slotKey = `${d.id}__${rowType.includes("Faculty 2") ? "AFTERNOON" : "MORNING"}`;
+
+              if (!slotAssignments[slotKey]) slotAssignments[slotKey] = [];
+
+              slotAssignments[slotKey].push({
+                faculty: facultyName,
+                dept: dept.name,
+                rowType: rowType,
+                dayId: d.id,
+                date: d.date,
+                day: d.day
+              });
+            }
+          });
+        });
+
+        // Detect Double-Bookings (Same Faculty in multiple departments at same slot)
+        Object.keys(slotAssignments).forEach(slotKey => {
+          let assignments = slotAssignments[slotKey];
+          let counts = {};
+
+          assignments.forEach(a => {
+            counts[a.faculty] = (counts[a.faculty] || 0) + 1;
+          });
+
+          Object.keys(counts).forEach(fac => {
+            if (counts[fac] > 1) {
+              let clashingDepts = assignments.filter(a => a.faculty === fac).map(a => a.dept).join(" & ");
+              let clashInfo = assignments.find(a => a.faculty === fac);
+
+              conflicts.push({
+                faculty: fac,
+                depts: clashingDepts,
+                date: clashInfo.date,
+                day: clashInfo.day,
+                slot: slotKey.includes("AFTERNOON") ? "1.00 PM - 5.30 PM" : "9.30 AM - 12.05 PM"
+              });
+
+              // Highlight offending cells in DOM
+              document.querySelectorAll(`.editable[data-day-id="${clashInfo.dayId}"]`).forEach(td => {
+                if (td.innerText.trim().toUpperCase() === fac) {
+                  td.classList.add("overmapped-cell");
+                }
+              });
+            }
+          });
+        });
+      });
+
+      // Update Top Banner UI
+      const banner = document.getElementById("alertBanner");
+      const errorBadge = document.getElementById("errorCountBadge");
+      const alertMsg = document.getElementById("alertMessage");
+
+      if (conflicts.length > 0) {
+        banner.className = "alert-banner";
+        errorBadge.innerText = `${conflicts.length} Over-mapped Conflict${conflicts.length > 1 ? 's' : ''}`;
+        
+        let detailsText = conflicts.map(c => `⚠️ <strong>${c.faculty}</strong> assigned simultaneously in [${c.depts}] on ${c.date} (${c.slot})`).join(" | ");
+        alertMsg.innerHTML = detailsText;
+      } else {
+        banner.className = "alert-banner clean";
+        errorBadge.innerText = "0 Errors";
+        alertMsg.innerHTML = "✅ All faculties are mapped within valid schedules. No over-mapping or clashes detected.";
+      }
+    }
+
+    // Populate Week Filter in Right Side Panel
+    function populateWeekFilter() {
+      const weekFilter = document.getElementById("weekFilter");
+      const weeks = [...new Set(TIMETABLE_DAYS.map(d => d.week))];
+      weekFilter.innerHTML = weeks.map(w => `<option value="${w}">${w}</option>`).join("");
+    }
+
+    // Right-Side Panel: Free Faculty List Calculation
+    function updateFacultyAvailability() {
+      const selectedWeek = document.getElementById("weekFilter").value;
+      const selectedDay = document.getElementById("dayFilter").value;
+      const searchQuery = document.getElementById("facultySearch").value.trim().toUpperCase();
+      const listContainer = document.getElementById("facultyList");
+
+      listContainer.innerHTML = "";
+
+      // Find active days matching week & day filters
+      const targetDays = TIMETABLE_DAYS.filter(d => {
+        let matchWeek = d.week === selectedWeek;
+        let matchDay = selectedDay === "ALL" || d.day === selectedDay;
+        return matchWeek && matchDay;
+      });
+
+      let busyFacultyCount = {};
+      FACULTY_MASTER.forEach(fac => busyFacultyCount[fac] = 0);
+
+      targetDays.forEach(d => {
+        DEPARTMENTS.forEach(dept => {
+          dept.rows.forEach(rowType => {
+            if (rowType === "MODULE") return;
+            const assigned = timetableData[dept.name][rowType][d.id];
+            if (assigned && busyFacultyCount.hasOwnProperty(assigned)) {
+              busyFacultyCount[assigned]++;
+            }
+          });
+        });
+      });
+
+      FACULTY_MASTER.filter(f => f.includes(searchQuery)).forEach(faculty => {
+        const assignedSlots = busyFacultyCount[faculty];
+        const isFree = assignedSlots === 0;
+
+        let card = document.createElement("div");
+        card.className = `faculty-card ${isFree ? 'free' : 'busy'}`;
+        card.innerHTML = `
+          <div>
+            <strong>${faculty}</strong>
+            <div style="font-size:0.7rem; color:#666;">${isFree ? 'Available all filtered slots' : `Assigned in ${assignedSlots} slot(s)`}</div>
+          </div>
+          <span class="status-pill ${isFree ? 'free' : 'busy'}">${isFree ? 'FREE' : 'BUSY'}</span>
+        `;
+        listContainer.appendChild(card);
+      });
+    }
+
+    // Reset Timetable Data
+    function resetTimetable() {
+      if (confirm("Are you sure you want to reset all edits to initial timetable?")) {
+        initData();
+        renderBody();
+      }
+    }
+
+    // Export Timetable as JSON File
+    function exportData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(timetableData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "Timetable_Export_2026.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    // Initialize Page Application
+    window.onload = function() {
+      initData();
+      renderGrid();
+    };
+  </script>
+</body>
+</html>
