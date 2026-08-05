@@ -8,14 +8,13 @@
     :root {
       --excel-green: #107c41;
       --excel-green-dark: #0b582e;
-      --excel-light-bg: #f8f9fa;
-      --excel-border: #d4d4d4;
-      --excel-header-bg: #e6e6e6;
+      --excel-border: #e0e0e0;
+      --excel-header-bg: #f3f3f3;
       --danger-red: #d93025;
       --danger-bg: #fce8e6;
-      --success-green: #27ae60;
+      --success-green: #2e7d32;
       --text-dark: #202124;
-      --sidebar-width: 320px;
+      --sidebar-width: 300px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
@@ -24,26 +23,25 @@
       height: 100%;
       width: 100%;
       overflow: hidden;
-      background-color: #f8f9fa;
+      background-color: #ffffff;
       color: var(--text-dark);
       display: flex;
       flex-direction: column;
     }
 
-    /* Top Navigation Header */
+    /* Top Header */
     header {
-      background-color: var(--excel-green);
-      color: white;
+      background-color: #ffffff;
+      color: var(--text-dark);
       padding: 10px 20px;
+      border-bottom: 2px solid var(--excel-green);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-      z-index: 100;
       flex-shrink: 0;
     }
 
-    header h1 { font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    header h1 { font-size: 1.1rem; font-weight: 700; color: var(--excel-green-dark); display: flex; align-items: center; gap: 8px; }
     
     .top-controls {
       display: flex;
@@ -55,7 +53,8 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      background: white;
+      background: #f8f9fa;
+      border: 1px solid var(--excel-border);
       padding: 4px 10px;
       border-radius: 4px;
     }
@@ -63,7 +62,7 @@
     .dept-filter-container label {
       font-size: 0.82rem;
       font-weight: 600;
-      color: var(--excel-green-dark);
+      color: var(--text-dark);
     }
 
     select.dept-select {
@@ -75,44 +74,49 @@
       color: var(--text-dark);
       outline: none;
       cursor: pointer;
+      background: white;
     }
 
     .btn-action {
-      background: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      color: white;
+      background: white;
+      border: 1px solid var(--excel-border);
+      color: var(--text-dark);
       padding: 6px 12px;
       border-radius: 4px;
       font-size: 0.8rem;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
     }
-    .btn-action:hover { background: rgba(255, 255, 255, 0.35); }
+    .btn-action:hover { background: #f1f3f4; }
+    .btn-action.primary { background: var(--excel-green); color: white; border: none; }
+    .btn-action.primary:hover { background: var(--excel-green-dark); }
 
-    /* Alert Banner for Overmapping */
-    .alert-banner {
-      background-color: var(--danger-bg);
-      border-bottom: 2px solid var(--danger-red);
-      color: var(--danger-red);
+    /* Collapsible Alert Banner for Overmapping */
+    .alert-banner-wrapper {
+      flex-shrink: 0;
+      background-color: #ffffff;
+      border-bottom: 1px solid var(--excel-border);
+    }
+
+    .alert-banner-header {
       padding: 8px 20px;
-      font-size: 0.85rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-shrink: 0;
+      cursor: pointer;
+      font-size: 0.85rem;
+      background-color: #ffffff;
     }
 
-    .alert-banner.clean {
-      background-color: #e6f4ea;
-      border-bottom: 2px solid var(--success-green);
+    .alert-banner-header.has-error {
+      background-color: var(--danger-bg);
+      color: var(--danger-red);
+    }
+
+    .alert-banner-header.clean {
+      background-color: #ffffff;
       color: var(--success-green);
-    }
-
-    .alert-details {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
     }
 
     .error-badge {
@@ -124,11 +128,34 @@
       font-weight: bold;
     }
 
+    .error-badge.clean-badge {
+      background: var(--success-green);
+    }
+
+    .alert-details-content {
+      display: none;
+      padding: 10px 20px;
+      background-color: #fff8f7;
+      border-top: 1px solid #f5c6cb;
+      font-size: 0.82rem;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .alert-details-content.open {
+      display: block;
+    }
+
+    .conflict-item {
+      padding: 3px 0;
+      color: var(--danger-red);
+    }
+
     /* Main Container Layout */
     .main-wrapper {
       display: flex;
       flex: 1;
-      height: calc(100vh - 100px);
+      height: calc(100vh - 110px);
       overflow: hidden;
       position: relative;
     }
@@ -136,7 +163,7 @@
     /* Timetable Table Horizontal Scroll Wrapper */
     .grid-container {
       flex: 1;
-      overflow: auto; /* Enables horizontal and vertical scroll */
+      overflow: auto;
       background: white;
       position: relative;
       white-space: nowrap;
@@ -164,21 +191,21 @@
       position: sticky;
       left: 0;
       z-index: 30;
-      background-color: #f1f3f4;
+      background-color: #ffffff;
       min-width: 130px;
       font-weight: bold;
       text-align: left;
-      border-right: 2px solid #b0b0b0;
+      border-right: 2px solid var(--excel-border);
     }
 
     table.excel-table th.col-sticky-2, table.excel-table td.col-sticky-2 {
       position: sticky;
       left: 130px;
       z-index: 30;
-      background-color: #f1f3f4;
+      background-color: #ffffff;
       min-width: 140px;
       font-size: 0.75rem;
-      border-right: 2px solid #b0b0b0;
+      border-right: 2px solid var(--excel-border);
     }
 
     /* Sticky Headers */
@@ -188,18 +215,18 @@
       z-index: 25;
     }
 
-    tr.header-week th { background-color: #217346; color: white; font-size: 0.85rem; font-weight: bold; }
-    tr.header-date th { background-color: #e1dfdd; color: #323130; font-size: 0.75rem; }
-    tr.header-day th { background-color: #f3f2f1; color: #323130; font-weight: 600; }
-    tr.header-dayno th { background-color: #edebe9; color: #605e5c; font-size: 0.7rem; }
+    tr.header-week th { background-color: var(--excel-green); color: white; font-size: 0.85rem; font-weight: bold; }
+    tr.header-date th { background-color: #f1f3f4; color: #323130; font-size: 0.75rem; }
+    tr.header-day th { background-color: #ffffff; color: #323130; font-weight: 600; }
+    tr.header-dayno th { background-color: #f8f9fa; color: #605e5c; font-size: 0.7rem; }
 
     /* Department Row Divider */
     tr.dept-header-row td {
-      background-color: #107c41;
-      color: white;
+      background-color: #e8f5e9;
+      color: var(--excel-green-dark);
       font-weight: bold;
       text-align: left;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       padding: 6px 12px;
       position: sticky;
       left: 0;
@@ -209,7 +236,7 @@
     /* Editable Cells & Select Inputs */
     td.editable {
       cursor: pointer;
-      background-color: white;
+      background-color: #ffffff;
     }
 
     td.editable select {
@@ -231,24 +258,52 @@
       font-weight: bold;
     }
 
-    /* Right Side Panel - Available Faculties */
+    /* Collapsible Right Side Panel - Available Faculties */
+    .side-panel-wrapper {
+      display: flex;
+      position: relative;
+      transition: all 0.3s ease;
+      z-index: 40;
+    }
+
+    .side-panel-wrapper.collapsed .side-panel {
+      width: 0;
+      padding: 0;
+      overflow: hidden;
+      border: none;
+    }
+
+    .panel-toggle-btn {
+      width: 20px;
+      background: #f1f3f4;
+      border-left: 1px solid var(--excel-border);
+      border-right: 1px solid var(--excel-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.75rem;
+      color: #555;
+      user-select: none;
+    }
+    .panel-toggle-btn:hover { background: #e0e0e0; }
+
     .side-panel {
       width: var(--sidebar-width);
       background-color: #ffffff;
-      border-left: 2px solid var(--excel-border);
+      border-left: 1px solid var(--excel-border);
       display: flex;
       flex-direction: column;
-      box-shadow: -2px 0 5px rgba(0,0,0,0.05);
-      z-index: 40;
-      flex-shrink: 0;
+      transition: width 0.3s ease;
+      overflow: hidden;
     }
 
     .panel-header {
       padding: 12px 16px;
-      background-color: var(--excel-header-bg);
+      background-color: #ffffff;
       border-bottom: 1px solid var(--excel-border);
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -257,7 +312,7 @@
     .panel-controls {
       padding: 12px 16px;
       border-bottom: 1px solid var(--excel-border);
-      background-color: #fcfcfc;
+      background-color: #fafafa;
     }
 
     .panel-controls label {
@@ -276,6 +331,7 @@
       font-size: 0.8rem;
       outline: none;
       margin-bottom: 10px;
+      background: white;
     }
 
     .faculty-list {
@@ -291,8 +347,8 @@
       padding: 8px 12px;
       margin-bottom: 8px;
       border-radius: 4px;
-      border-left: 4px solid var(--success-green);
-      background-color: #f4fbf7;
+      border: 1px solid var(--excel-border);
+      background-color: #ffffff;
       font-size: 0.82rem;
     }
 
@@ -301,15 +357,15 @@
       padding: 2px 6px;
       border-radius: 10px;
       font-weight: 600;
-      background-color: #d4edda;
-      color: #155724;
+      background-color: #e8f5e9;
+      color: var(--success-green);
     }
 
     /* Modal for Managing Master Faculty List */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.4);
       display: none;
       justify-content: center;
       align-items: center;
@@ -323,11 +379,12 @@
       max-height: 80vh;
       display: flex;
       flex-direction: column;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     .modal h3 { font-size: 1rem; margin-bottom: 10px; }
     .modal-list { flex: 1; overflow-y: auto; margin: 10px 0; border: 1px solid var(--excel-border); padding: 5px; }
     .modal-item { display: flex; justify-content: space-between; padding: 4px 8px; font-size: 0.85rem; }
-    .modal-item button { color: red; border: none; background: none; cursor: pointer; }
+    .modal-item button { color: var(--danger-red); border: none; background: none; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -357,15 +414,21 @@
     </div>
   </header>
 
-  <!-- Real-time Over-mapping Alert Banner -->
-  <div id="alertBanner" class="alert-banner clean">
-    <div class="alert-details">
-      <span class="error-badge" id="errorCountBadge">0 Errors</span>
-      <span id="alertMessage">✅ All faculties are mapped within valid schedules. No conflicts detected.</span>
+  <!-- Collapsible Alert Banner for Overmapping -->
+  <div class="alert-banner-wrapper">
+    <div id="alertBannerHeader" class="alert-banner-header clean" onclick="toggleErrorDetails()">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="error-badge clean-badge" id="errorCountBadge">0 Errors</span>
+        <span id="alertSummaryText">✅ All faculties are mapped within valid schedules. No conflicts detected.</span>
+      </div>
+      <button id="toggleDetailsBtn" style="background:none; border:none; color:inherit; font-weight:bold; cursor:pointer; font-size:0.8rem;">Show Details ▼</button>
+    </div>
+    <div id="alertDetailsContent" class="alert-details-content">
+      <!-- Clean conflict list rendered here -->
     </div>
   </div>
 
-  <!-- Main Grid & Panel Workspace -->
+  <!-- Main Grid & Collapsible Right Sidebar Workspace -->
   <div class="main-wrapper">
     
     <!-- Excel-like Timetable Grid (With Horizontal Scroll) -->
@@ -395,34 +458,40 @@
       </table>
     </div>
 
-    <!-- Right Side Panel: Available (FREE) Faculties Only -->
-    <div class="side-panel">
-      <div class="panel-header">
-        <span>🟢 Free Faculties This Week</span>
-      </div>
-      <div class="panel-controls">
-        <label for="weekFilter">Select Week:</label>
-        <select id="weekFilter" onchange="updateFacultyAvailability()">
-          <!-- Weeks populated dynamically -->
-        </select>
-
-        <label for="dayFilter">Filter by Day:</label>
-        <select id="dayFilter" onchange="updateFacultyAvailability()">
-          <option value="ALL">Entire Week</option>
-          <option value="Tuesday">Tuesday</option>
-          <option value="Wednesday">Wednesday</option>
-          <option value="Thursday">Thursday</option>
-          <option value="Friday">Friday</option>
-          <option value="Saturday">Saturday</option>
-          <option value="Monday">Monday</option>
-        </select>
-
-        <label for="facultySearch">Search Faculty:</label>
-        <input type="text" id="facultySearch" placeholder="Filter free faculty..." oninput="updateFacultyAvailability()">
+    <!-- Collapsible Right Side Panel Wrapper -->
+    <div class="side-panel-wrapper" id="sidePanelWrapper">
+      <div class="panel-toggle-btn" onclick="toggleSidePanel()" title="Toggle Faculty Panel">
+        <span id="toggleIcon">▶</span>
       </div>
 
-      <div class="faculty-list" id="facultyList">
-        <!-- ONLY Free Faculty cards rendered here -->
+      <div class="side-panel">
+        <div class="panel-header">
+          <span>🟢 Free Faculties This Week</span>
+        </div>
+        <div class="panel-controls">
+          <label for="weekFilter">Select Week:</label>
+          <select id="weekFilter" onchange="updateFacultyAvailability()">
+            <!-- Weeks populated dynamically -->
+          </select>
+
+          <label for="dayFilter">Filter by Day:</label>
+          <select id="dayFilter" onchange="updateFacultyAvailability()">
+            <option value="ALL">Entire Week</option>
+            <option value="Tuesday">Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday</option>
+            <option value="Saturday">Saturday</option>
+            <option value="Monday">Monday</option>
+          </select>
+
+          <label for="facultySearch">Search Faculty:</label>
+          <input type="text" id="facultySearch" placeholder="Filter free faculty..." oninput="updateFacultyAvailability()">
+        </div>
+
+        <div class="faculty-list" id="facultyList">
+          <!-- ONLY Free Faculty cards rendered here -->
+        </div>
       </div>
     </div>
 
@@ -450,7 +519,7 @@
       "SAUMYA C", "SHATA", "SHIMUL", "SHREYA SEN", "SUDIP", "VIJAY", "VIRAJ", "VIVEK"
     ];
 
-    // Dates and Weeks Data Columns (Extracted from NEW TT)
+    // Dates and Weeks Data Columns (Extracted from NEW TT 2026)
     const TIMETABLE_DAYS = [
       { id: "col_1", week: "WEEK 3", date: "2026-07-14", day: "Tuesday", dayNo: "DAY 1" },
       { id: "col_2", week: "WEEK 3", date: "2026-07-15", day: "Wednesday", dayNo: "DAY 2" },
@@ -484,6 +553,7 @@
 
     let timetableData = {};
 
+    // Populate initial state exactly matching NEW TT 2026 sheet
     function initData() {
       DEPARTMENTS.forEach(dept => {
         timetableData[dept.name] = {};
@@ -570,7 +640,6 @@
               td.innerText = val;
               td.addEventListener("blur", handleTextEdit);
             } else {
-              // Faculty Dropdown
               let selectHtml = `<select onchange="handleDropdownEdit(this)">`;
               selectHtml += `<option value="">-- Select --</option>`;
               FACULTY_MASTER.forEach(fac => {
@@ -614,6 +683,7 @@
       renderBody();
     }
 
+    // Cleaned Up Conflict Banner Logic
     function validateOverMapping() {
       let conflicts = [];
       document.querySelectorAll(".editable").forEach(c => c.classList.remove("overmapped-cell"));
@@ -670,18 +740,56 @@
         });
       });
 
-      const banner = document.getElementById("alertBanner");
-      const errorBadge = document.getElementById("errorCountBadge");
-      const alertMsg = document.getElementById("alertMessage");
+      const header = document.getElementById("alertBannerHeader");
+      const badge = document.getElementById("errorCountBadge");
+      const summaryText = document.getElementById("alertSummaryText");
+      const detailsContent = document.getElementById("alertDetailsContent");
 
       if (conflicts.length > 0) {
-        banner.className = "alert-banner";
-        errorBadge.innerText = `${conflicts.length} Over-mapped Conflict${conflicts.length > 1 ? 's' : ''}`;
-        alertMsg.innerHTML = conflicts.map(c => `⚠️ <strong>${c.faculty}</strong> assigned in multiple departments [${c.depts}] on ${c.date} (${c.slot})`).join(" | ");
+        header.className = "alert-banner-header has-error";
+        badge.className = "error-badge";
+        badge.innerText = `${conflicts.length} Over-mapped Conflict${conflicts.length > 1 ? 's' : ''}`;
+        summaryText.innerText = `⚠️ Overmapping detected! ${conflicts.length} conflict(s) found. Click 'Show Details' to review.`;
+
+        detailsContent.innerHTML = conflicts.map(c => `
+          <div class="conflict-item">
+            📌 <strong>${c.faculty}</strong> — Over-mapped on <strong>${c.date}</strong> (${c.slot}) across departments: <em>${c.depts}</em>
+          </div>
+        `).join("");
       } else {
-        banner.className = "alert-banner clean";
-        errorBadge.innerText = "0 Errors";
-        alertMsg.innerHTML = "✅ All faculties are mapped within valid schedules. No over-mapping detected.";
+        header.className = "alert-banner-header clean";
+        badge.className = "error-badge clean-badge";
+        badge.innerText = "0 Errors";
+        summaryText.innerText = "✅ All faculties are mapped within valid schedules. No conflicts detected.";
+        detailsContent.innerHTML = "";
+      }
+    }
+
+    // Toggle Collapsible Alert Details
+    function toggleErrorDetails() {
+      const detailsContent = document.getElementById("alertDetailsContent");
+      const btn = document.getElementById("toggleDetailsBtn");
+
+      if (detailsContent.classList.contains("open")) {
+        detailsContent.classList.remove("open");
+        btn.innerText = "Show Details ▼";
+      } else {
+        detailsContent.classList.add("open");
+        btn.innerText = "Hide Details ▲";
+      }
+    }
+
+    // Toggle Collapsible Right Side Menu
+    function toggleSidePanel() {
+      const wrapper = document.getElementById("sidePanelWrapper");
+      const icon = document.getElementById("toggleIcon");
+
+      if (wrapper.classList.contains("collapsed")) {
+        wrapper.classList.remove("collapsed");
+        icon.innerText = "▶";
+      } else {
+        wrapper.classList.add("collapsed");
+        icon.innerText = "◀";
       }
     }
 
@@ -691,7 +799,6 @@
       weekFilter.innerHTML = weeks.map(w => `<option value="${w}">${w}</option>`).join("");
     }
 
-    // ONLY SHOW FREE FACULTIES IN RIGHT PANEL
     function updateFacultyAvailability() {
       const selectedWeek = document.getElementById("weekFilter").value;
       const selectedDay = document.getElementById("dayFilter").value;
@@ -721,7 +828,6 @@
         });
       });
 
-      // FILTER ONLY FREE FACULTIES (assignedSlots === 0)
       const freeFaculties = FACULTY_MASTER.filter(faculty => {
         const isFree = busyFacultyCount[faculty] === 0;
         const matchesSearch = faculty.includes(searchQuery);
@@ -739,7 +845,7 @@
         card.innerHTML = `
           <div>
             <strong>${faculty}</strong>
-            <div style="font-size:0.7rem; color:#155724;">Available for mapping</div>
+            <div style="font-size:0.7rem; color:#2e7d32;">Available for mapping</div>
           </div>
           <span class="status-pill">FREE</span>
         `;
